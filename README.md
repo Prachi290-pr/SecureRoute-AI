@@ -1,3 +1,12 @@
+---
+title: SecureRoute AI
+emoji: 🛡️
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 8000
+---
+
 # SecureRoute-AI
 ## OpenEnv Environment for Enterprise Support Ticket Compliance
 
@@ -112,10 +121,20 @@ openenv validate .
 # Run baseline model evaluation
 python inference.py
 
+# Run HTTP API locally
+uvicorn app:app --host 0.0.0.0 --port 8000
+
 # Test Docker containerization
 docker build -t secureroute-ai .
 docker run -p 8000:8000 secureroute-ai
 ```
+
+## HTTP Endpoints
+
+- `GET /health`: service heartbeat
+- `POST /reset` with body `{"ticket_id": 3}` or `{"ticket_id": null}`
+- `GET /state`: returns current observation
+- `POST /step` with body `{"redacted_text":"...","routing":"IT|BILLING|SECURITY"}`
 
 ---
 
@@ -138,6 +157,19 @@ app_port: 8000
 ## Local Key Management
 
 The inference script reads `HF_TOKEN` directly from the environment and falls back to a deterministic local heuristic when the token is not set. This keeps local development simple without hardcoding secrets in source files.
+
+## Deploy To Hugging Face Spaces
+
+Use the included deployment script:
+
+```bash
+export HF_TOKEN=...
+export HF_SPACE_ID=your-username/secure-route-ai
+python deploy_space.py
+```
+
+Optional:
+- `HF_SPACE_PRIVATE=true` to create a private Space
 
 ---
 
