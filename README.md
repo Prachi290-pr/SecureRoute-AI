@@ -97,3 +97,8 @@ Optional:
 - `HF_SPACE_PRIVATE=true`
 
 The deployment helper uploads the repository and can also set Space secrets from available environment variables: `HF_TOKEN`, `API_BASE_URL`, and `MODEL_NAME`.
+
+## Collaborators
+
+- Chintamani Joshi
+- Prachi Sawant
