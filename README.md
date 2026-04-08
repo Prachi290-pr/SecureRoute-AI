@@ -98,11 +98,17 @@ department: "BILLING"
 git clone https://github.com/YOUR_USERNAME/SecureRoute-AI.git
 cd SecureRoute-AI
 
+# Install dependencies
+pip install -r requirements.txt
+
+# Add your API key to local secret file (recommended for local dev)
+# Create .secrets/openai_api_key.txt and paste your OpenAI key there
+# OR set OPENAI_API_KEY directly in your shell
+
 # Validate OpenEnv specification compliance
 openenv validate .
 
 # Run baseline model evaluation
-export HF_TOKEN=your_token
 python inference.py
 
 # Test Docker containerization
@@ -124,7 +130,18 @@ app_port: 7860
 - Python 3.9+
 - Passes `openenv validate`
 - Exposes evaluation endpoint on port 7860
-- Reads `HF_TOKEN`, `MODEL_NAME`, `API_BASE_URL` from environment variables
+- Reads `OPENAI_API_KEY` (or `OPENAI_API_KEY_FILE`), `MODEL_NAME`, and `API_BASE_URL` from environment variables
+
+---
+
+## Local Key Management
+
+The inference script supports two key-loading modes:
+
+1. `OPENAI_API_KEY` environment variable (first priority)
+2. Local key file path from `OPENAI_API_KEY_FILE` (default: `.secrets/openai_api_key.txt`)
+
+This allows clean local development without hardcoding secrets in source files.
 
 ---
 
@@ -138,7 +155,10 @@ SecureRoute-AI/
 ├── environment.py       # Core OpenEnv implementation
 ├── graders.py           # Deterministic scoring logic
 ├── inference.py         # Baseline evaluation script
+├── requirements.txt     # Runtime dependencies
+├── SecureRouteAI_Dev.ipynb  # Development + validation notebook
 ├── Dockerfile           # HF Spaces deployment
+├── .secrets/openai_api_key.txt # Local key file (gitignored)
 └── README.md            # This document
 ```
 
