@@ -100,5 +100,5 @@ The deployment helper uploads the repository and can also set Space secrets from
 
 ## Collaborators
 
-- Chintamani Joshi
-- Prachi Sawant
+- Chintamani Joshi @Chintamani26
+- Prachi Sawant @Prachi290-pr
