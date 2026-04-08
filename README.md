@@ -101,9 +101,10 @@ cd SecureRoute-AI
 # Install dependencies
 pip install -r requirements.txt
 
-# Add your API key to local secret file (recommended for local dev)
-# Create .secrets/openai_api_key.txt and paste your OpenAI key there
-# OR set OPENAI_API_KEY directly in your shell
+# Set the required Hugging Face token and model variables for inference
+export HF_TOKEN=...
+export MODEL_NAME=...
+export API_BASE_URL=...
 
 # Validate OpenEnv specification compliance
 openenv validate .
@@ -113,7 +114,7 @@ python inference.py
 
 # Test Docker containerization
 docker build -t secureroute-ai .
-docker run -p 7860:7860 secureroute-ai
+docker run -p 8000:8000 secureroute-ai
 ```
 
 ---
@@ -122,26 +123,21 @@ docker run -p 7860:7860 secureroute-ai
 
 **Hugging Face Spaces (Docker)**:
 sdk: docker
-app_port: 7860
+app_port: 8000
 
 
 
 **Container Requirements**:
 - Python 3.9+
 - Passes `openenv validate`
-- Exposes evaluation endpoint on port 7860
-- Reads `OPENAI_API_KEY` (or `OPENAI_API_KEY_FILE`), `MODEL_NAME`, and `API_BASE_URL` from environment variables
+- Exposes evaluation endpoint on port 8000
+- Reads `HF_TOKEN`, `MODEL_NAME`, and `API_BASE_URL` from environment variables
 
 ---
 
 ## Local Key Management
 
-The inference script supports two key-loading modes:
-
-1. `OPENAI_API_KEY` environment variable (first priority)
-2. Local key file path from `OPENAI_API_KEY_FILE` (default: `.secrets/openai_api_key.txt`)
-
-This allows clean local development without hardcoding secrets in source files.
+The inference script reads `HF_TOKEN` directly from the environment and falls back to a deterministic local heuristic when the token is not set. This keeps local development simple without hardcoding secrets in source files.
 
 ---
 
@@ -158,7 +154,6 @@ SecureRoute-AI/
 ├── requirements.txt     # Runtime dependencies
 ├── SecureRouteAI_Dev.ipynb  # Development + validation notebook
 ├── Dockerfile           # HF Spaces deployment
-├── .secrets/openai_api_key.txt # Local key file (gitignored)
 └── README.md            # This document
 ```
 

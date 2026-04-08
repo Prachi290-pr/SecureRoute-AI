@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field
 from enum import Enum
+
+from pydantic import BaseModel, Field
 
 class RoutingDepartment(str, Enum):
     IT = "IT"
@@ -7,13 +8,15 @@ class RoutingDepartment(str, Enum):
     SECURITY = "SECURITY"
 
 class Observation(BaseModel):
-    ticket_id: int
-    text: str = Field(description="The original customer support ticket text to be processed.")
+    ticket_id: int | None = Field(
+        default=None,
+        description="Optional ticket identifier used by the benchmark and diagnostics.",
+    )
+    text: str = Field(description="The customer support ticket text to be triaged.")
 
 class Action(BaseModel):
-    redacted_text: str = Field(description="The ticket text with PII perfectly replaced by '[REDACTED]'.")
+    redacted_text: str = Field(description="The ticket text with required PII replaced by '[REDACTED]'.")
     routing: RoutingDepartment = Field(description="The department the ticket should be routed to.")
 
 class Reward(BaseModel):
-    score: float = Field(ge=0.0, le=1.0, description="The total reward score.")
-    reason: str = Field(description="Explanation of the assigned score for logging purposes.")
+    score: float = Field(ge=0.0, le=1.0, description="Normalized episode reward in the range 0.0 to 1.0.")

@@ -1,18 +1,35 @@
 import os
 import json
 import re
+from typing import Any
+
 from openai import OpenAI
 from environment import SecureRouteEnv
 from models import Action, RoutingDepartment
 
-# Initialize the OpenAI client to point to Hugging Face
-client = OpenAI(
-    base_url=os.environ.get("API_BASE_URL"), # This routes it away from OpenAI
-    api_key=os.environ.get("HF_TOKEN")       # This uses your Hugging Face token
-)
+TASKS = [
+    (1, "EASY"),
+    (3, "MEDIUM"),
+    (10, "HARD"),
+]
 
 
-def extract_json_payload(text: str) -> dict:
+def build_client() -> OpenAI | None:
+    hf_token = os.environ.get("HF_TOKEN")
+    if not hf_token:
+        return None
+
+    return OpenAI(
+        base_url=os.environ.get("API_BASE_URL", "https://api.openai.com/v1"),
+        api_key=hf_token,
+    )
+
+
+client = build_client()
+MODEL_NAME = os.environ.get("MODEL_NAME", "gpt-4o-mini")
+
+
+def extract_json_payload(text: str) -> dict[str, Any]:
     cleaned = (text or "").strip()
     if not cleaned:
         raise ValueError("Model returned empty content.")
@@ -76,7 +93,7 @@ def heuristic_route(text: str) -> RoutingDepartment:
     return RoutingDepartment.IT
 
 
-def build_safe_action(obs_text: str, model_payload: dict) -> Action:
+def build_safe_action(obs_text: str, model_payload: dict[str, Any]) -> Action:
     # Route with model output when valid, else deterministic fallback.
     parsed_routing = model_payload.get("routing", "")
     try:
@@ -90,12 +107,12 @@ def build_safe_action(obs_text: str, model_payload: dict) -> Action:
     return Action(redacted_text=redacted_text, routing=routing)
 
 def run_inference(ticket_id: int, task_name: str):
-    print(f"[START] Episode {ticket_id} - Task: {task_name}")
+    print(f"[START] ticket_id={ticket_id} task={task_name}")
 
     env = SecureRouteEnv()
     obs = env.reset(ticket_id=ticket_id)
 
-    observation = (
+    prompt = (
         "You are SecureRouteAI, a strict compliance triage agent.\n"
         "Task:\n"
         "1) Return the FULL original ticket text in redacted_text.\n"
@@ -108,31 +125,36 @@ def run_inference(ticket_id: int, task_name: str):
     )
 
     try:
-        response = client.chat.completions.create(
-            model=os.environ.get("MODEL_NAME"),
-            messages=[
-                {"role": "system", "content": "You are a compliance AI."},
-                {"role": "user", "content": observation}
-            ],
-        )
+        parsed: dict[str, Any]
+        if client is not None:
+            response = client.chat.completions.create(
+                model=MODEL_NAME,
+                messages=[
+                    {"role": "system", "content": "You are a compliance AI."},
+                    {"role": "user", "content": prompt},
+                ],
+            )
+            content = response.choices[0].message.content or ""
+            parsed = extract_json_payload(content)
+        else:
+            parsed = {
+                "redacted_text": deterministic_redact(obs.text),
+                "routing": heuristic_route(obs.text).value,
+            }
 
-        content = response.choices[0].message.content or ""
-        print(f"[DEBUG] Raw model output: {content[:300]!r}")
-        parsed = extract_json_payload(content)
         agent_action = build_safe_action(obs.text, parsed)
 
-        # Take the step in the environment
         _, reward, _, _ = env.step(agent_action)
 
-        print(f"[STEP] Obs: {obs.ticket_id} | Action: {agent_action.routing.value} / PII Handled | Reward: {reward.score}")
-        print(f"[END] Final Score: {reward.score}\n")
+        print(
+            f"[STEP] observation={obs.text[:120]!r} action={{'routing': '{agent_action.routing.value}', 'redacted_text': {agent_action.redacted_text[:120]!r}}} reward={reward.score}"
+        )
+        print(f"[END] final_score={reward.score}")
 
     except Exception as e:
-        print(f"[STEP] Error during inference: {str(e)}")
-        print(f"[END] Final Score: 0.0\n")
+        print(f"[STEP] error={str(e)!r} reward=0.0")
+        print("[END] final_score=0.0")
 
 if __name__ == "__main__":
-    # Test all three deterministic tasks
-    run_inference(ticket_id=1, task_name="EASY")
-    run_inference(ticket_id=3, task_name="MEDIUM")
-    run_inference(ticket_id=8, task_name="HARD")
+    for ticket_id, task_name in TASKS:
+        run_inference(ticket_id=ticket_id, task_name=task_name)

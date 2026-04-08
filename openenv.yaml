@@ -2,10 +2,20 @@ name: "SecureRouteAI"
 version: "1.0.0"
 description: "An enterprise-grade PII & Compliance Triage text environment."
 entry_point: "environment:SecureRouteEnv"
+app_port: 8000
 observation_space:
   type: "text"
   description: "A customer support ticket that needs to be triaged and scrubbed of PII."
 action_space:
-  type: "json"
-  description: "The redacted customer support ticket text and the Enum routing department."
+  type: "object"
+  description: "An object containing the redacted ticket text and routing department."
+  properties:
+    redacted_text:
+      type: "string"
+      description: "The ticket text with required PII replaced by [REDACTED]."
+    routing:
+      type: "string"
+      enum: ["IT", "BILLING", "SECURITY"]
+      description: "The target department for the ticket."
+  required: ["redacted_text", "routing"]
 reward_range: [0.0, 1.0]
