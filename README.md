@@ -9,101 +9,77 @@ app_port: 8000
 
 # SecureRoute-AI
 
-SecureRoute-AI is a text-based OpenEnv environment for PII redaction and compliance routing on customer support tickets.
+SecureRoute-AI is a text-based OpenEnv environment for enterprise support-ticket triage. An agent receives a raw ticket, redacts required PII, and routes the ticket to the right team.
 
-## What The Agent Must Do
+## Overview
 
-1. Redact required PII spans with exactly `[REDACTED]`.
-2. Route each ticket to one department:
-   - `IT`
-   - `BILLING`
-   - `SECURITY`
+This project is designed for deterministic evaluation and lightweight deployment.
 
-## Environment Contract
+- Observation: support-ticket text
+- Action: redacted ticket text plus routing decision
+- Reward: normalized score from `0.0` to `1.0`
 
-- Observation: ticket text (`Observation.text`)
-- Action: `redacted_text` + `routing` (`Action`)
-- Reward: float in `[0.0, 1.0]` (`Reward.score`)
+## Scoring
 
-### Reward Logic
+The environment uses a simple additive score:
 
 - `+0.3` for correct routing
-- `+0.7` for exact expected redaction
-- `0.0` hard fail if any sensitive span leaks in `redacted_text`
+- `+0.7` for exact redaction
+- `0.0` if sensitive data leaks in the submitted text
 
-Each episode is single-step (`done=True` after one `step`).
+Each episode is single-step, so a single `step()` call produces the final reward.
 
-## Tasks
+## Benchmark Tasks
 
-- Easy: ticket `1` (normal IT ticket)
-- Medium: ticket `3` (credit card redaction + BILLING)
-- Hard: ticket `10` (phishing + SSN redaction + SECURITY)
+- Easy: ticket `1`, a normal IT support request
+- Medium: ticket `3`, billing with a credit-card redaction requirement
+- Hard: ticket `10`, phishing plus SSN redaction for Security
 
-## Project Files
+## Repository Layout
 
 - `openenv.yaml`: OpenEnv metadata
-- `models.py`: Pydantic models and enums
-- `environment.py`: `reset()`, `state()`, `step()`
-- `graders.py`: deterministic task graders
-- `inference.py`: OpenAI-client inference runner with strict logs
-- `app.py`: FastAPI HTTP wrapper (`/reset`, `/state`, `/step`)
+- `models.py`: Pydantic models and routing enum
+- `environment.py`: `reset()`, `state()`, and `step()` implementation
+- `graders.py`: deterministic scoring helpers
+- `inference.py`: OpenAI-compatible inference runner with `[START]`, `[STEP]`, `[END]` logs
+- `app.py`: FastAPI HTTP wrapper for `/reset`, `/state`, and `/step`
 - `server/app.py`: packaged server entry point for deployment checks
 - `deploy_space.py`: Hugging Face Space deployment helper
 - `tickets.json`: benchmark tickets
 - `Dockerfile`: container runtime for Hugging Face Spaces
 - `pyproject.toml`: project metadata and script entry point
-- `uv.lock`: dependency lockfile for `uv`
+- `uv.lock`: resolved dependency lockfile
 
-## Inference Environment Variables
+## Runtime Variables
 
-`inference.py` uses:
+`inference.py` reads the following environment variables:
 
-- `API_BASE_URL` (default provided)
-- `MODEL_NAME` (default provided)
-- `HF_TOKEN` (no default; optional for offline deterministic fallback)
-- `LOCAL_IMAGE_NAME` (optional; for harness compatibility)
-
-## Logging Format
-
-`inference.py` emits strict structured logs:
-
-- `[START] ...`
-- `[STEP] ...`
-- `[END] ...`
+- `API_BASE_URL` for the OpenAI-compatible client endpoint
+- `MODEL_NAME` for the model identifier
+- `HF_TOKEN` for authentication
+- `LOCAL_IMAGE_NAME` as an optional harness hint
 
 ## HTTP API
 
-Start locally:
+Run locally:
 
 ```bash
 uvicorn app:app --host 0.0.0.0 --port 8000
 ```
 
-Endpoints:
+Available endpoints:
 
-- `GET /` returns available endpoints
-- `GET /health`
-- `POST /reset` with `{ "ticket_id": 3 }` or `{}`
-- `GET /state`
-- `POST /step` with:
+- `GET /` returns the available endpoints
+- `GET /health` returns a basic status payload
+- `POST /reset` accepts no body, `{}`, or `{"ticket_id": 3}`
+- `GET /state` returns the current observation
+- `POST /step` accepts `redacted_text` and `routing`
 
-```json
-{
-  "redacted_text": "...",
-  "routing": "IT"
-}
-```
-
-## Local Run
+## Local Commands
 
 ```bash
 pip install -r requirements.txt
 python inference.py
-```
-
-## Docker
-
-```bash
 docker build -t secureroute-ai .
 docker run -p 8000:8000 secureroute-ai
 ```
@@ -120,4 +96,4 @@ Optional:
 
 - `HF_SPACE_PRIVATE=true`
 
-The deployment helper uploads the repo and can also set Space secrets from available environment variables (`HF_TOKEN`, `API_BASE_URL`, `MODEL_NAME`).
+The deployment helper uploads the repository and can also set Space secrets from available environment variables: `HF_TOKEN`, `API_BASE_URL`, and `MODEL_NAME`.
