@@ -8,159 +8,104 @@ app_port: 8000
 ---
 
 # SecureRoute-AI
-## OpenEnv Environment for Enterprise Support Ticket Compliance
 
----
+SecureRoute-AI is a text-based OpenEnv environment for PII redaction and compliance routing on customer support tickets.
 
-## Environment Description
+## What The Agent Must Do
 
-SecureRoute-AI is a production-grade OpenEnv evaluation environment that simulates enterprise support ticket processing workflows. Agents receive raw customer support tickets containing mixed personally identifiable information (PII) and must perform two tasks:
+1. Redact required PII spans with exactly `[REDACTED]`.
+2. Route each ticket to one department:
+   - `IT`
+   - `BILLING`
+   - `SECURITY`
 
-1. **Redact** all sensitive data by replacing identified spans with `[REDACTED]`
-2. **Route** each ticket to the correct department: `IT`, `BILLING`, or `SECURITY`
+## Environment Contract
 
-**Real-world context**: Enterprises process 10,000+ support tickets monthly containing credit card numbers, SSNs, API keys, emails, phone numbers, and other sensitive data. This environment evaluates agent capability to automatically sanitize tickets per compliance policy before human review or downstream LLM processing.
+- Observation: ticket text (`Observation.text`)
+- Action: `redacted_text` + `routing` (`Action`)
+- Reward: float in `[0.0, 1.0]` (`Reward.score`)
 
----
+### Reward Logic
 
-## Observation and Action Spaces
+- `+0.3` for correct routing
+- `+0.7` for exact expected redaction
+- `0.0` hard fail if any sensitive span leaks in `redacted_text`
 
-### Observation Space (Text Input)
-Raw support ticket text as received by enterprise support teams:
-Subject: Double charged invoice #INV-8472
+Each episode is single-step (`done=True` after one `step`).
 
-Billing team,
-I was charged $299 twice yesterday at 14:22 and 14:24. Transaction refs: TXN-XYZ123, TXN-ABC456.
-Full details: Visa 4111-1111-1111-1111 exp 11/27
-Cardholder: Michael Chen
+## Tasks
 
+- Easy: ticket `1` (normal IT ticket)
+- Medium: ticket `3` (credit card redaction + BILLING)
+- Hard: ticket `10` (phishing + SSN redaction + SECURITY)
 
+## Project Files
 
-### Action Space (Text Output + Routing Decision)
-Structured response containing redacted ticket and department assignment:
+- `openenv.yaml`: OpenEnv metadata
+- `models.py`: Pydantic models and enums
+- `environment.py`: `reset()`, `state()`, `step()`
+- `graders.py`: deterministic task graders
+- `inference.py`: OpenAI-client inference runner with strict logs
+- `app.py`: FastAPI HTTP wrapper (`/reset`, `/state`, `/step`)
+- `deploy_space.py`: Hugging Face Space deployment helper
+- `tickets.json`: benchmark tickets
+- `Dockerfile`: container runtime for Hugging Face Spaces
 
-redacted_ticket: "Subject: Double charged invoice #INV-8472\n\nBilling team,\n\nI was charged $299 twice yesterday at 14:22 and 14:24. Transaction refs: TXN-XYZ123, TXN-ABC456.\nFull details: Visa [REDACTED] exp 11/27\nCardholder: [REDACTED]"
+## Inference Environment Variables
 
-department: "BILLING"
+`inference.py` uses:
 
+- `API_BASE_URL` (default provided)
+- `MODEL_NAME` (default provided)
+- `HF_TOKEN` (no default; optional for offline deterministic fallback)
+- `LOCAL_IMAGE_NAME` (optional; for harness compatibility)
 
----
+## Logging Format
 
-## Task Difficulty Levels
+`inference.py` emits strict structured logs:
 
-### Easy Tasks (5 tickets)
-**Characteristics**: Single PII type or none, unambiguous routing signals  
-**Examples**: 
-- Password reset requests containing email addresses → `IT`
-- Application crashes with no sensitive data → `IT`
-**Agent requirements**: Basic pattern matching and keyword-based routing
+- `[START] ...`
+- `[STEP] ...`
+- `[END] ...`
 
-### Medium Tasks (5 tickets)
-**Characteristics**: 1-3 mixed PII types, financial context requiring precise redaction  
-**Examples**:
-- Double charges containing credit card numbers → `BILLING`
-- Failed renewals with billing addresses → `BILLING`
-**Agent requirements**: Multi-pattern PII detection, financial intent recognition
+## HTTP API
 
-### Hard Tasks (5 tickets)
-**Characteristics**: 3-5 complex PII types, security context, edge cases requiring context awareness  
-**Examples**:
-- Account compromise with SSNs, IP addresses, passwords → `SECURITY`
-- Exposed API keys in communication channels → `SECURITY`
-**Agent requirements**: Advanced security pattern recognition, nuanced context evaluation
-
----
-
-## Evaluation Metrics
-
-**Final episode score (0.0-1.0)**: `0.5 × Redaction Accuracy + 0.5 × Routing Accuracy`
-
-### Redaction Accuracy Components
-- **+1.0**: All PII correctly redacted, no over-redaction of harmless identifiers (transaction IDs, serial numbers)
-- **+0.5**: Partial redaction (missed 1-2 spans)
-- **0.0**: Any PII leakage detected
-
-### Routing Accuracy Components
-- **+1.0**: Correct department assignment (`IT`, `BILLING`, `SECURITY`)
-- **0.0**: Incorrect department or no routing decision
-
-**Reward density**: Intermediate rewards provided after each step() call, not only at episode termination.
-
----
-
-## Implementation Details
-
-**Dataset**: `tickets.json` contains 15 production-grade support tickets reflecting realistic PII distribution observed in enterprise environments.
-
-**Grading**: 100% deterministic evaluation using regex pattern matching against ground truth PII spans and exact department matching.
-
-**Episodes**: Multi-step interaction with maximum step budget of 12 steps per ticket.
-
-**OpenEnv compliance**: Full implementation of `reset()`, `step(action)`, and `state()` interfaces with Pydantic-typed observation, action, and reward models.
-
----
-
-## Quick Start
+Start locally:
 
 ```bash
-# Clone repository
-git clone https://github.com/YOUR_USERNAME/SecureRoute-AI.git
-cd SecureRoute-AI
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Set the required Hugging Face token and model variables for inference
-export HF_TOKEN=...
-export MODEL_NAME=...
-export API_BASE_URL=...
-
-# Validate OpenEnv specification compliance
-openenv validate .
-
-# Run baseline model evaluation
-python inference.py
-
-# Run HTTP API locally
 uvicorn app:app --host 0.0.0.0 --port 8000
+```
 
-# Test Docker containerization
+Endpoints:
+
+- `GET /` returns available endpoints
+- `GET /health`
+- `POST /reset` with `{ "ticket_id": 3 }` or `{}`
+- `GET /state`
+- `POST /step` with:
+
+```json
+{
+  "redacted_text": "...",
+  "routing": "IT"
+}
+```
+
+## Local Run
+
+```bash
+pip install -r requirements.txt
+python inference.py
+```
+
+## Docker
+
+```bash
 docker build -t secureroute-ai .
 docker run -p 8000:8000 secureroute-ai
 ```
 
-## HTTP Endpoints
-
-- `GET /health`: service heartbeat
-- `POST /reset` with body `{"ticket_id": 3}` or `{"ticket_id": null}`
-- `GET /state`: returns current observation
-- `POST /step` with body `{"redacted_text":"...","routing":"IT|BILLING|SECURITY"}`
-
----
-
-## Deployment Configuration
-
-**Hugging Face Spaces (Docker)**:
-sdk: docker
-app_port: 8000
-
-
-
-**Container Requirements**:
-- Python 3.9+
-- Passes `openenv validate`
-- Exposes evaluation endpoint on port 8000
-- Reads `HF_TOKEN`, `MODEL_NAME`, and `API_BASE_URL` from environment variables
-
----
-
-## Local Key Management
-
-The inference script reads `HF_TOKEN` directly from the environment and falls back to a deterministic local heuristic when the token is not set. This keeps local development simple without hardcoding secrets in source files.
-
 ## Deploy To Hugging Face Spaces
-
-Use the included deployment script:
 
 ```bash
 export HF_TOKEN=...
@@ -169,33 +114,7 @@ python deploy_space.py
 ```
 
 Optional:
-- `HF_SPACE_PRIVATE=true` to create a private Space
 
----
+- `HF_SPACE_PRIVATE=true`
 
-## Project Structure
-
-```plaintext
-SecureRoute-AI/
-├── tickets.json         # 15 raw production tickets
-├── openenv.yaml         # OpenEnv metadata
-├── models.py            # Pydantic observation/action/reward models
-├── environment.py       # Core OpenEnv implementation
-├── graders.py           # Deterministic scoring logic
-├── inference.py         # Baseline evaluation script
-├── requirements.txt     # Runtime dependencies
-├── SecureRouteAI_Dev.ipynb  # Development + validation notebook
-├── Dockerfile           # HF Spaces deployment
-└── README.md            # This document
-```
-
-
----
-
-## Environment Tags
-
-`openenv`, `compliance`, `pii`, `enterprise`, `security`, `production`, `text`
-
----
-
-**SecureRoute-AI evaluates production-critical agent capabilities for enterprise compliance workflows.**
+The deployment helper uploads the repo and can also set Space secrets from available environment variables (`HF_TOKEN`, `API_BASE_URL`, `MODEL_NAME`).

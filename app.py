@@ -27,8 +27,13 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/")
+def root() -> dict[str, list[str]]:
+    return {"endpoints": ["/health", "/reset", "/state", "/step"]}
+
+
 @app.post("/reset", response_model=Observation)
-def reset(request: ResetRequest) -> Observation:
+def reset(request: ResetRequest = ResetRequest()) -> Observation:
     try:
         return env.reset(ticket_id=request.ticket_id)
     except Exception as exc:

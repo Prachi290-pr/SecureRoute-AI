@@ -7,6 +7,12 @@ from openai import OpenAI
 from environment import SecureRouteEnv
 from models import Action, RoutingDepartment
 
+API_BASE_URL = os.getenv("API_BASE_URL", "https://api.openai.com/v1")
+MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4o-mini")
+HF_TOKEN = os.getenv("HF_TOKEN")
+# Optional when running against a local Docker image in some harnesses.
+LOCAL_IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME")
+
 TASKS = [
     (1, "EASY"),
     (3, "MEDIUM"),
@@ -15,18 +21,16 @@ TASKS = [
 
 
 def build_client() -> OpenAI | None:
-    hf_token = os.environ.get("HF_TOKEN")
-    if not hf_token:
+    if not HF_TOKEN:
         return None
 
     return OpenAI(
-        base_url=os.environ.get("API_BASE_URL", "https://api.openai.com/v1"),
-        api_key=hf_token,
+        base_url=API_BASE_URL,
+        api_key=HF_TOKEN,
     )
 
 
 client = build_client()
-MODEL_NAME = os.environ.get("MODEL_NAME", "gpt-4o-mini")
 
 
 def extract_json_payload(text: str) -> dict[str, Any]:
