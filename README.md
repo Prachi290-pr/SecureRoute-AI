@@ -47,9 +47,12 @@ Each episode is single-step (`done=True` after one `step`).
 - `graders.py`: deterministic task graders
 - `inference.py`: OpenAI-client inference runner with strict logs
 - `app.py`: FastAPI HTTP wrapper (`/reset`, `/state`, `/step`)
+- `server/app.py`: packaged server entry point for deployment checks
 - `deploy_space.py`: Hugging Face Space deployment helper
 - `tickets.json`: benchmark tickets
 - `Dockerfile`: container runtime for Hugging Face Spaces
+- `pyproject.toml`: project metadata and script entry point
+- `uv.lock`: dependency lockfile for `uv`
 
 ## Inference Environment Variables
 
