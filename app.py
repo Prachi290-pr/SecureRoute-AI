@@ -1,6 +1,6 @@
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Body, FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 from environment import SecureRouteEnv
@@ -33,9 +33,9 @@ def root() -> dict[str, list[str]]:
 
 
 @app.post("/reset", response_model=Observation)
-def reset(request: ResetRequest = ResetRequest()) -> Observation:
+def reset(request: ResetRequest | None = Body(default=None)) -> Observation:
     try:
-        return env.reset(ticket_id=request.ticket_id)
+        return env.reset(ticket_id=request.ticket_id if request else None)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
