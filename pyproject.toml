@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "secureroute-ai"
+version = "1.0.0"
+description = "PII and compliance triage OpenEnv environment"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2,<3",
+    "openai>=1,<2",
+    "fastapi>=0.115,<1",
+    "uvicorn>=0.30,<1",
+    "huggingface_hub>=0.30,<1",
+]
+
+[tool.setuptools]
+py-modules = ["app", "environment", "graders", "inference", "models", "deploy_space"]
