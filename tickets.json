@@ -1,0 +1,107 @@
+[
+  {
+    "id": 1,
+    "text": "Subject: Can't access SharePoint\n\nHi team,\n\nGetting 'access denied' when trying to open the Q2-reports folder in SharePoint. My login is jdoe@acmecorp.com but permission checker shows I'm not listed. Need this fixed before stakeholder meeting at 3pm.\n\nJohn Doe",
+    "true_routing": "IT",
+    "contains_pii": false,
+    "pii_to_redact": null
+  },
+  {
+    "id": 2,
+    "text": "Subject: Zoom crashes on launch\n\nSupport,\n\nZoom client crashes immediately on Windows 11 startup. Error: 'Zoom.exe has stopped working'. Already uninstalled/reinstalled twice. Meeting in 45min.\n\nLog file attached.\n\nSarah Patel",
+    "true_routing": "IT",
+    "contains_pii": false,
+    "pii_to_redact": null
+  },
+  {
+    "id": 3,
+    "text": "Subject: Double charged invoice #INV-8472\n\nBilling team,\n\nI see two $499 charges yesterday at 14:22 and 14:24. Transaction refs: TXN-XYZ123, TXN-ABC456.\n\nFull details: Visa 4111-1111-1111-1111 exp 11/27\nCardholder: Michael Chen\n\nPlease refund one charge.\n\nMike",
+    "true_routing": "BILLING",
+    "contains_pii": true,
+    "pii_to_redact": "4111-1111-1111-1111"
+  },
+  {
+    "id": 4,
+    "text": "Subject: VPN won't connect from home\n\nHello,\n\nCisco VPN fails with 'connection timeout' from my home network (IP: 192.168.1.100). Works fine from office. Windows logs show IKEv2 failure.\n\nPhone: 555-012-3456\n\nUrgent - client demo at 11am.\n\nLisa Johnson",
+    "true_routing": "IT",
+    "contains_pii": false,
+    "pii_to_redact": null
+  },
+  {
+    "id": 5,
+    "text": "Subject: Outlook search not working\n\nTeam,\n\nSearch function in Outlook 365 returns no results for emails received yesterday. Indexing shows complete but still broken. Need to find Q1 sales contracts.\n\nMy AD: lsmith\n\nThanks,\nLisa",
+    "true_routing": "IT",
+    "contains_pii": false,
+    "pii_to_redact": null
+  },
+  {
+    "id": 6,
+    "text": "Subject: Subscription renewal failed\n\nHi,\n\nAnnual Pro license ($1,200) failed to renew. Please charge card 4222-3333-4444-5555 (exp 08/28). Account ID: enterprise-392.\n\nBilling address:\n456 Pine Ave Apt 2C\nSpringfield, IL 62704\n\nSarah M. Rodriguez",
+    "true_routing": "BILLING",
+    "contains_pii": true,
+    "pii_to_redact": "4222-3333-4444-5555"
+  },
+  {
+    "id": 7,
+    "text": "Subject: Payment declined order #ORD-3928\n\nSupport,\n\nOrder #ORD-3928 shows 'payment failed' but $299 was deducted from Mastercard 5555-5555-5555-4444. Bank confirms charge posted.\n\nName on card: Alex Rivera\n\nPlease resolve.\n\nAlex",
+    "true_routing": "BILLING",
+    "contains_pii": true,
+    "pii_to_redact": "5555-5555-5555-4444"
+  },
+  {
+    "id": 8,
+    "text": "Subject: URGENT account compromise\n\nSECURITY TEAM,\n\nSuspicious login from 185.220.101.47 at 02:15am UTC. Password 'Summer2026!' was attempted 8 times. They accessed my email john.doe@acmecorp.com.\n\nSSN (verification): 123-45-6789\n\nLOCK IMMEDIATELY.\n\nJohn",
+    "true_routing": "SECURITY",
+    "contains_pii": true,
+    "pii_to_redact": "123-45-6789"
+  },
+  {
+    "id": 9,
+    "text": "Subject: API key accidentally shared\n\nCRITICAL,\n\nPosted API key sk_live_51DEF456GHI in #dev-general Slack yesterday. 15 people saw before deletion. Identity verification SSN 222-33-4444 on file.\n\nKey grants full production database access.\n\nREVOKE NOW.\n\nMike Chen",
+    "true_routing": "SECURITY",
+    "contains_pii": true,
+    "pii_to_redact": "222-33-4444"
+  },
+  {
+    "id": 10,
+    "text": "Subject: Phishing email received\n\nURGENT,\n\nEmail from 'CEO Office' (ceo@acme-security.net) requesting W2 form + SSN 987-65-4321. Contains '2026-Tax-Form.docx' attachment.\n\nObvious phishing - block domain.\n\nSarah",
+    "true_routing": "SECURITY",
+    "contains_pii": true,
+    "pii_to_redact": "987-65-4321"
+  },
+  {
+    "id": 11,
+    "text": "Subject: Shared drive permissions wrong\n\nTeam,\n\nCan't write to /shared/projects/client-alpha despite being project lead. Error 0x80070005. My account is mchen@acmecorp.net.\n\nNeed access before 5pm demo.\n\nMike",
+    "true_routing": "IT",
+    "contains_pii": false,
+    "pii_to_redact": null
+  },
+  {
+    "id": 12,
+    "text": "Subject: Refund request - order canceled\n\nBilling,\n\nPlease refund order ORD-8471 to Visa 4567-8901-2345-6789. Canceled before shipping. No confirmation received.\n\nVerification DOB: 07/22/1985\n\nThanks,\nDavid",
+    "true_routing": "BILLING",
+    "contains_pii": true,
+    "pii_to_redact": "4567-8901-2345-6789"
+  },
+  {
+    "id": 13,
+    "text": "Subject: New device login alert\n\nALERT,\n\nLogin from iPhone 14 Pro Max in Ashburn, VA at 03:47am EST. Never been there. Please review activity log. Identity verify SSN 555-66-7777.\n\nRecovery phone: +1-555-987-6543\n\nAlex Kim",
+    "true_routing": "SECURITY",
+    "contains_pii": true,
+    "pii_to_redact": "555-66-7777"
+  },
+  {
+    "id": 14,
+    "text": "Subject: Password reset unauthorized\n\nSECURITY,\n\nReceived reset request from IP 203.0.113.195. Temp password was 'Z9kP!m4qR8vT2'. DID NOT REQUEST. SSN on file 888-99-0000.\n\nLisa Johnson",
+    "true_routing": "SECURITY",
+    "contains_pii": true,
+    "pii_to_redact": "888-99-0000"
+  },
+  {
+    "id": 15,
+    "text": "Subject: Missing Enterprise Invoice\n\nBilling,\n\nWe did not receive the Q2 enterprise invoice for account 9982. Please route it to our portal and charge the default card 1111-2222-3333-4444.\n\nJohn Doe",
+    "true_routing": "BILLING",
+    "contains_pii": true,
+    "pii_to_redact": "1111-2222-3333-4444"
+  }
+]
