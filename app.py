@@ -1,14 +1,10 @@
 from typing import Any
 
-from fastapi import Body, FastAPI, HTTPException
-from pydantic import BaseModel, Field
+from fastapi import FastAPI, HTTPException, Request
+from pydantic import BaseModel
 
 from environment import SecureRouteEnv
 from models import Action, Observation, Reward
-
-
-class ResetRequest(BaseModel):
-    ticket_id: int | None = Field(default=None)
 
 
 class StepResponse(BaseModel):
@@ -33,9 +29,23 @@ def root() -> dict[str, list[str]]:
 
 
 @app.post("/reset", response_model=Observation)
-def reset(request: ResetRequest | None = Body(default=None)) -> Observation:
+async def reset(request: Request, ticket_id: int | None = None) -> Observation:
     try:
-        return env.reset(ticket_id=request.ticket_id if request else None)
+        selected_ticket_id = ticket_id
+
+        raw_body = await request.body()
+        if raw_body:
+            try:
+                payload = await request.json()
+            except Exception:
+                payload = None
+
+            if isinstance(payload, dict):
+                body_ticket_id = payload.get("ticket_id")
+                if isinstance(body_ticket_id, int) or body_ticket_id is None:
+                    selected_ticket_id = body_ticket_id
+
+        return env.reset(ticket_id=selected_ticket_id)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
