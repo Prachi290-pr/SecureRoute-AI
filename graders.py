@@ -1,5 +1,6 @@
 from environment import SecureRouteEnv
 from models import Action
+import math
 
 EASY_TICKET_ID = 1
 MEDIUM_TICKET_ID = 3
@@ -10,7 +11,12 @@ MAX_SCORE = 0.9
 
 def to_validator_safe_interval(score: float) -> float:
     """Normalize score to a non-boundary range that remains valid after rounding."""
-    raw = float(score)
+    try:
+        raw = float(score)
+    except Exception:
+        return MIN_SCORE
+    if not math.isfinite(raw):
+        return MIN_SCORE
     if raw <= 0.0:
         return MIN_SCORE
     if raw >= 1.0:

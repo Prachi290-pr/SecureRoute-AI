@@ -25,4 +25,4 @@ class Action(BaseModel):
 class Reward(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    score: float = Field(ge=0.0, le=1.0, description="Normalized episode reward in the range 0.0 to 1.0.")
+    score: float = Field(gt=0.0, lt=1.0, description="Normalized episode reward strictly between 0.0 and 1.0.")
