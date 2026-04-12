@@ -91,6 +91,32 @@ def root() -> HTMLResponse:
             }
             a {
                 color: #8bd3ff;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            .btn {
+                display: inline-block;
+                margin-top: 12px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 10px 12px;
+                background: #12233a;
+                color: #cde9ff;
+                cursor: pointer;
+            }
+            .btn:hover {
+                background: #17304f;
+            }
+            pre {
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                padding: 10px;
+                background: #0f1828;
+                color: #dbe8f5;
+                white-space: pre-wrap;
+                word-break: break-word;
             }
         </style>
     </head>
@@ -103,17 +129,32 @@ def root() -> HTMLResponse:
                     Use the endpoints below to interact with the environment.
                 </p>
                 <ul>
-                    <li><code>GET /health</code> - service status</li>
-                    <li><code>POST /reset</code> - initialize random or selected ticket</li>
-                    <li><code>GET /state</code> - current observation</li>
-                    <li><code>POST /step</code> - submit redaction and routing action</li>
-                    <li><code>GET /docs</code> - interactive API docs</li>
+                    <li><a href="/health"><code>GET /health</code></a> - service status</li>
+                    <li><a href="/state"><code>GET /state</code></a> - current observation (after reset)</li>
+                    <li><a href="/docs"><code>POST /reset</code></a> - initialize random or selected ticket (use docs or button below)</li>
+                    <li><a href="/docs"><code>POST /step</code></a> - submit redaction and routing action (use docs)</li>
+                    <li><a href="/docs"><code>GET /docs</code></a> - interactive API docs</li>
                 </ul>
+                <button class="btn" onclick="quickReset()">Quick Reset (POST /reset)</button>
+                <pre id="reset-output">Click the button to test POST /reset.</pre>
                 <p style="margin-top:14px;">
                     Space repo: <a href="https://huggingface.co/spaces/Chintamani007/secure-route-ai">huggingface.co/spaces/Chintamani007/secure-route-ai</a>
                 </p>
             </div>
         </div>
+        <script>
+            async function quickReset() {
+                const output = document.getElementById('reset-output');
+                output.textContent = 'Loading...';
+                try {
+                    const response = await fetch('/reset', { method: 'POST' });
+                    const data = await response.json();
+                    output.textContent = JSON.stringify(data, null, 2);
+                } catch (err) {
+                    output.textContent = 'Request failed: ' + String(err);
+                }
+            }
+        </script>
     </body>
 </html>
 """
