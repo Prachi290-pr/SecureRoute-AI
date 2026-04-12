@@ -20,6 +20,15 @@ TASKS = [
 ]
 
 
+def to_open_interval_score(score: float) -> float:
+    raw = float(score)
+    if raw <= 0.0:
+        return 0.1
+    if raw >= 1.0:
+        return 0.9
+    return max(0.1, min(0.9, round(raw, 2)))
+
+
 def build_client() -> OpenAI | None:
     if not HF_TOKEN:
         return None
@@ -149,15 +158,16 @@ def run_inference(ticket_id: int, task_name: str):
         agent_action = build_safe_action(obs.text, parsed)
 
         _, reward, _, _ = env.step(agent_action)
+        final_score = to_open_interval_score(reward.score)
 
         print(
-            f"[STEP] observation={obs.text[:120]!r} action={{'routing': '{agent_action.routing.value}', 'redacted_text': {agent_action.redacted_text[:120]!r}}} reward={reward.score}"
+            f"[STEP] observation={obs.text[:120]!r} action={{'routing': '{agent_action.routing.value}', 'redacted_text': {agent_action.redacted_text[:120]!r}}} reward={final_score}"
         )
-        print(f"[END] final_score={reward.score}")
+        print(f"[END] final_score={final_score}")
 
     except Exception as e:
-        print(f"[STEP] error={str(e)!r} reward=0.0")
-        print("[END] final_score=0.0")
+        print(f"[STEP] error={str(e)!r} reward=0.1")
+        print("[END] final_score=0.1")
 
 if __name__ == "__main__":
     for ticket_id, task_name in TASKS:
