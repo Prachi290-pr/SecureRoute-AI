@@ -20,13 +20,13 @@ TICKET_MAP = [
 ]
 
 
-def to_open_interval_score(score: float) -> float:
-    raw = float(score)
-    if raw <= 0.0:
-        return 0.01
-    if raw >= 1.0:
+def make_meta_safe(score):
+    s = float(score)
+    if s >= 1.0:
         return 0.99
-    return max(0.01, min(0.99, round(raw, 2)))
+    if s <= 0.0:
+        return 0.01
+    return s
 
 
 def build_client() -> OpenAI | None:
@@ -158,7 +158,7 @@ def run_inference(ticket_id: int, task_name: str):
         agent_action = build_safe_action(obs.text, parsed)
 
         _, reward, _, _ = env.step(agent_action)
-        final_score = to_open_interval_score(reward.score)
+        final_score = make_meta_safe(reward.score)
 
         print(
             f"[STEP] observation={obs.text[:120]!r} action={{'routing': '{agent_action.routing.value}', 'redacted_text': {agent_action.redacted_text[:120]!r}}} reward={final_score}"

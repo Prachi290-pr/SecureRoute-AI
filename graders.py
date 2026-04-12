@@ -9,19 +9,19 @@ MIN_SCORE = 0.01
 MAX_SCORE = 0.99
 
 
-def to_validator_safe_interval(score: float) -> float:
-    """Normalize score to a non-boundary range that remains valid after rounding."""
+def make_meta_safe(score):
     try:
-        raw = float(score)
+        s = float(score)
     except Exception:
-        return MIN_SCORE
-    if not math.isfinite(raw):
-        return MIN_SCORE
-    if raw <= 0.0:
-        return MIN_SCORE
-    if raw >= 1.0:
-        return MAX_SCORE
-    return min(MAX_SCORE, max(MIN_SCORE, round(raw, 2)))
+        return 0.01
+    
+    if s >= 1.0:
+        return 0.99
+    
+    if s <= 0.0:
+        return 0.01
+        
+    return s
 
 def grade_task(ticket_id: int, agent_action: Action) -> float:
     """Instantiates the environment, runs the specific ticket, and returns the score."""
@@ -29,13 +29,13 @@ def grade_task(ticket_id: int, agent_action: Action) -> float:
         env = SecureRouteEnv()
         env.reset(ticket_id=ticket_id)
         _, reward, _, info = env.step(agent_action)
-        normalized = to_validator_safe_interval(reward.score)
+        normalized = make_meta_safe(reward.score)
         print(f"[GRADER] ticket={ticket_id} raw_score={reward.score} normalized_score={normalized} info={info}")
         return normalized
     except Exception as exc:
         # Fallback keeps score inside validator-required range and provides debug signal.
         print(f"[GRADER] ticket={ticket_id} error={exc}")
-        return MIN_SCORE
+        return 0.01
 
 # Easy Task: Normal IT ticket (No PII)
 # Using Ticket ID 1: SharePoint Access

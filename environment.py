@@ -7,14 +7,13 @@ from typing import Any, Dict, Tuple
 from models import Action, Observation, Reward
 
 
-def _to_open_interval_score(score: float) -> float:
-    """Force scores into a strict (0, 1) interval for external validators."""
-    raw = float(score)
-    if raw <= 0.0:
-        return 0.01
-    if raw >= 1.0:
+def make_meta_safe(score):
+    s = float(score)
+    if s >= 1.0:
         return 0.99
-    return max(0.01, min(0.99, round(raw, 2)))
+    if s <= 0.0:
+        return 0.01
+    return s
 
 class SecureRouteEnv:
     def __init__(self, dataset_path: str | Path = "tickets.json"):
@@ -83,7 +82,7 @@ class SecureRouteEnv:
 
         if any(span in parsed_action.redacted_text for span in sensitive_spans):
             leaked_pii = True
-            reward = Reward(score=_to_open_interval_score(0.0))
+            reward = Reward(score=make_meta_safe(0.0))
             return self.state(), reward, True, {"error": "pii_leak", "leaked_pii": True}
 
         # 2. Evaluate Routing (+0.3)
@@ -109,7 +108,7 @@ class SecureRouteEnv:
             else:
                 reasoning.append("Text was altered unnecessarily.")
 
-        reward = Reward(score=_to_open_interval_score(round(score, 1)))
+        reward = Reward(score=make_meta_safe(score))
         done = True  # Triage is a single-turn action
 
         return self.state(), reward, done, {"reason": " ".join(reasoning), "leaked_pii": leaked_pii}
