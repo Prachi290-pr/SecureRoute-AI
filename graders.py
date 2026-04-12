@@ -4,20 +4,32 @@ from models import Action
 EASY_TICKET_ID = 1
 MEDIUM_TICKET_ID = 3
 HARD_TICKET_ID = 10
-EPSILON = 1e-3
+MIN_SCORE = 0.1
+MAX_SCORE = 0.9
 
 
-def to_open_interval(score: float) -> float:
-    """Clamp score to the strict open interval (0, 1)."""
-    return min(1.0 - EPSILON, max(EPSILON, float(score)))
+def to_validator_safe_interval(score: float) -> float:
+    """Normalize score to a non-boundary range that remains valid after rounding."""
+    raw = float(score)
+    if raw <= 0.0:
+        return MIN_SCORE
+    if raw >= 1.0:
+        return MAX_SCORE
+    return min(MAX_SCORE, max(MIN_SCORE, round(raw, 2)))
 
 def grade_task(ticket_id: int, agent_action: Action) -> float:
     """Instantiates the environment, runs the specific ticket, and returns the score."""
-    env = SecureRouteEnv()
-    env.reset(ticket_id=ticket_id)
-    _, reward, _, _ = env.step(agent_action)
-
-    return to_open_interval(reward.score)
+    try:
+        env = SecureRouteEnv()
+        env.reset(ticket_id=ticket_id)
+        _, reward, _, info = env.step(agent_action)
+        normalized = to_validator_safe_interval(reward.score)
+        print(f"[GRADER] ticket={ticket_id} raw_score={reward.score} normalized_score={normalized} info={info}")
+        return normalized
+    except Exception as exc:
+        # Fallback keeps score inside validator-required range and provides debug signal.
+        print(f"[GRADER] ticket={ticket_id} error={exc}")
+        return MIN_SCORE
 
 # Easy Task: Normal IT ticket (No PII)
 # Using Ticket ID 1: SharePoint Access
