@@ -4,6 +4,12 @@ from models import Action
 EASY_TICKET_ID = 1
 MEDIUM_TICKET_ID = 3
 HARD_TICKET_ID = 10
+EPSILON = 1e-3
+
+
+def to_open_interval(score: float) -> float:
+    """Clamp score to the strict open interval (0, 1)."""
+    return min(1.0 - EPSILON, max(EPSILON, float(score)))
 
 def grade_task(ticket_id: int, agent_action: Action) -> float:
     """Instantiates the environment, runs the specific ticket, and returns the score."""
@@ -11,7 +17,7 @@ def grade_task(ticket_id: int, agent_action: Action) -> float:
     env.reset(ticket_id=ticket_id)
     _, reward, _, _ = env.step(agent_action)
 
-    return reward.score
+    return to_open_interval(reward.score)
 
 # Easy Task: Normal IT ticket (No PII)
 # Using Ticket ID 1: SharePoint Access
