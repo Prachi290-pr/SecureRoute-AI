@@ -15,9 +15,75 @@ SecureRoute-AI is a text-based OpenEnv environment for enterprise support-ticket
 
 This project is designed for deterministic evaluation and lightweight deployment.
 
-## Project Workflow Visual
+## CLI-Style Workflow Diagram
 
-![SecureRoute-AI workflow](assets/project-workflow.svg)
+```text
++-------------------+      +--------------------+      +-----------------------+
+| tickets.json      | ---> | environment.py     | ---> | models.py            |
+| raw ticket input  |      | reset/state/step   |      | Observation/Action   |
++-------------------+      +--------------------+      | Reward + RoutingEnum |
+                                                        +-----------+-----------+
+                                                                    |
+                                                                    v
+                                                        +-----------------------+
+                                                        | inference.py          |
+                                                        | OpenAI-compatible LLM |
+                                                        | logs: START/STEP/END |
+                                                        +-----------+-----------+
+                                                                    |
+                                                                    v
+                                                        +-----------------------+
+                                                        | graders.py            |
+                                                        | deterministic scoring |
+                                                        | outputs in (0, 1)     |
+                                                        +-----------+-----------+
+                                                                    |
+                                                                    v
+                                                        +-----------------------+
+                                                        | app.py / server/app.py|
+                                                        | GET /health /state    |
+                                                        | POST /reset /step     |
+                                                        +-----------+-----------+
+                                                                    |
+                                                                    v
+                                                        +-----------------------+
+                                                        | Docker + HF Spaces    |
+                                                        | deploy_space.py       |
+                                                        +-----------------------+
+```
+
+## Architecture Diagram
+
+```text
+                       +-----------------------------+
+                       |        Client Layer         |
+                       |  Browser / API Consumer     |
+                       +--------------+--------------+
+                                      |
+                                      v
+        +-----------------------------+-----------------------------+
+        |                  Service Layer (FastAPI)                 |
+        |        app.py + server/app.py (/reset, /state, /step)   |
+        +-----------------------------+-----------------------------+
+                                      |
+                                      v
+        +-----------------------------+-----------------------------+
+        |                Core Environment Layer                    |
+        | environment.py + models.py + tickets.json + graders.py  |
+        +-----------------------------+-----------------------------+
+                                      |
+                                      v
+        +-----------------------------+-----------------------------+
+        |                  Inference Layer                         |
+        | inference.py + OpenAI-compatible endpoint                |
+        +-----------------------------+-----------------------------+
+                                      |
+                                      v
+        +-----------------------------+-----------------------------+
+        |                Deployment Layer                          |
+        | Dockerfile + pyproject.toml + uv.lock + deploy_space.py |
+        +-----------------------------+-----------------------------+
+```
 
 - Observation: support-ticket text
 - Action: redacted ticket text plus routing decision
