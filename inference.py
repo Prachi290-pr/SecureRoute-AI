@@ -13,7 +13,7 @@ HF_TOKEN = os.getenv("HF_TOKEN")
 # Optional when running against a local Docker image in some harnesses.
 LOCAL_IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME")
 
-TASKS = [
+TICKET_MAP = [
     (1, "EASY"),
     (3, "MEDIUM"),
     (10, "HARD"),
@@ -23,10 +23,10 @@ TASKS = [
 def to_open_interval_score(score: float) -> float:
     raw = float(score)
     if raw <= 0.0:
-        return 0.1
+        return 0.01
     if raw >= 1.0:
-        return 0.9
-    return max(0.1, min(0.9, round(raw, 2)))
+        return 0.99
+    return max(0.01, min(0.99, round(raw, 2)))
 
 
 def build_client() -> OpenAI | None:
@@ -170,5 +170,5 @@ def run_inference(ticket_id: int, task_name: str):
         print("[END] final_score=0.1")
 
 if __name__ == "__main__":
-    for ticket_id, task_name in TASKS:
+    for ticket_id, task_name in TICKET_MAP:
         run_inference(ticket_id=ticket_id, task_name=task_name)

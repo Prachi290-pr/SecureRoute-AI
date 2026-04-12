@@ -11,10 +11,10 @@ def _to_open_interval_score(score: float) -> float:
     """Force scores into a strict (0, 1) interval for external validators."""
     raw = float(score)
     if raw <= 0.0:
-        return 0.1
+        return 0.01
     if raw >= 1.0:
-        return 0.9
-    return max(0.1, min(0.9, round(raw, 2)))
+        return 0.99
+    return max(0.01, min(0.99, round(raw, 2)))
 
 class SecureRouteEnv:
     def __init__(self, dataset_path: str | Path = "tickets.json"):
