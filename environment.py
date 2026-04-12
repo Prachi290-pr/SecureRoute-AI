@@ -8,12 +8,7 @@ from models import Action, Observation, Reward
 
 
 def make_meta_safe(score):
-    s = float(score)
-    if s >= 1.0:
-        return 0.99
-    if s <= 0.0:
-        return 0.01
-    return s
+    return max(0.01, min(0.99, float(score)))
 
 class SecureRouteEnv:
     def __init__(self, dataset_path: str | Path = "tickets.json"):

@@ -21,12 +21,7 @@ TICKET_MAP = [
 
 
 def make_meta_safe(score):
-    s = float(score)
-    if s >= 1.0:
-        return 0.99
-    if s <= 0.0:
-        return 0.01
-    return s
+    return max(0.01, min(0.99, float(score)))
 
 
 def build_client() -> OpenAI | None:

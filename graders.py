@@ -13,15 +13,8 @@ def make_meta_safe(score):
     try:
         s = float(score)
     except Exception:
-        return 0.01
-    
-    if s >= 1.0:
-        return 0.99
-    
-    if s <= 0.0:
-        return 0.01
-        
-    return s
+        s = 0.01
+    return max(0.01, min(0.99, s))
 
 def grade_task(ticket_id: int, agent_action: Action) -> float:
     """Instantiates the environment, runs the specific ticket, and returns the score."""
