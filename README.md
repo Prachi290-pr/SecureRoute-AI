@@ -15,6 +15,10 @@ SecureRoute-AI is a text-based OpenEnv environment for enterprise support-ticket
 
 This project is designed for deterministic evaluation and lightweight deployment.
 
+## Project Workflow Visual
+
+![SecureRoute-AI workflow](assets/project-workflow.svg)
+
 - Observation: support-ticket text
 - Action: redacted ticket text plus routing decision
 - Reward: normalized score from `0.0` to `1.0`

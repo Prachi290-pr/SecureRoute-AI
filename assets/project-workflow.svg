@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="860" viewBox="0 0 1400 860" role="img" aria-labelledby="title desc">
+  <title id="title">SecureRoute-AI Project Workflow</title>
+  <desc id="desc">Architecture flow from ticket input to redaction, routing, grading, and deployment.</desc>
+
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b132b"/>
+      <stop offset="100%" stop-color="#1c2541"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#22355b"/>
+      <stop offset="100%" stop-color="#1a2a4b"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#8ecae6"/>
+    </marker>
+    <style>
+      .title { font: 700 38px 'Segoe UI', Arial, sans-serif; fill: #e6f2ff; }
+      .subtitle { font: 500 18px 'Segoe UI', Arial, sans-serif; fill: #b9d6f2; }
+      .box { fill: url(#card); stroke: #8ecae6; stroke-width: 2; rx: 14; }
+      .label { font: 700 18px 'Segoe UI', Arial, sans-serif; fill: #f1f8ff; }
+      .text { font: 500 14px 'Segoe UI', Arial, sans-serif; fill: #d4e9ff; }
+      .line { stroke: #8ecae6; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .note { fill: #10203d; stroke: #4ea8de; stroke-width: 1.5; rx: 10; }
+      .noteText { font: 600 13px 'Segoe UI', Arial, sans-serif; fill: #bfe7ff; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1400" height="860" fill="url(#bg)"/>
+
+  <text x="60" y="70" class="title">SecureRoute-AI: End-to-End Workflow</text>
+  <text x="60" y="102" class="subtitle">PII Redaction, Compliance Routing, Deterministic Grading, and API Deployment</text>
+
+  <rect class="box" x="70" y="150" width="260" height="140"/>
+  <text class="label" x="95" y="185">Input Layer</text>
+  <text class="text" x="95" y="213">tickets.json</text>
+  <text class="text" x="95" y="236">Customer support ticket text</text>
+  <text class="text" x="95" y="259">PII patterns: CC and SSN</text>
+
+  <rect class="box" x="410" y="150" width="300" height="140"/>
+  <text class="label" x="435" y="185">Environment Core</text>
+  <text class="text" x="435" y="213">environment.py</text>
+  <text class="text" x="435" y="236">reset(), state(), step(action)</text>
+  <text class="text" x="435" y="259">Reward: route + redaction checks</text>
+
+  <rect class="box" x="790" y="150" width="260" height="140"/>
+  <text class="label" x="815" y="185">Model Contract</text>
+  <text class="text" x="815" y="213">models.py</text>
+  <text class="text" x="815" y="236">Observation, Action, Reward</text>
+  <text class="text" x="815" y="259">Routing enum: IT/BILLING/SECURITY</text>
+
+  <rect class="box" x="1110" y="150" width="220" height="140"/>
+  <text class="label" x="1135" y="185">Inference</text>
+  <text class="text" x="1135" y="213">inference.py</text>
+  <text class="text" x="1135" y="236">OpenAI-compatible client</text>
+  <text class="text" x="1135" y="259">Logs: START/STEP/END</text>
+
+  <rect class="box" x="230" y="390" width="280" height="150"/>
+  <text class="label" x="255" y="425">Deterministic Graders</text>
+  <text class="text" x="255" y="453">graders.py</text>
+  <text class="text" x="255" y="476">Easy, Medium, Hard tasks</text>
+  <text class="text" x="255" y="499">Scores constrained to (0, 1)</text>
+  <text class="text" x="255" y="522">Submission-safe outputs</text>
+
+  <rect class="box" x="590" y="390" width="320" height="150"/>
+  <text class="label" x="615" y="425">HTTP Service</text>
+  <text class="text" x="615" y="453">app.py + server/app.py</text>
+  <text class="text" x="615" y="476">GET /, /health, /state</text>
+  <text class="text" x="615" y="499">POST /reset, /step</text>
+  <text class="text" x="615" y="522">FastAPI + interactive docs</text>
+
+  <rect class="box" x="980" y="390" width="290" height="150"/>
+  <text class="label" x="1005" y="425">Deployment Layer</text>
+  <text class="text" x="1005" y="453">Dockerfile</text>
+  <text class="text" x="1005" y="476">deploy_space.py</text>
+  <text class="text" x="1005" y="499">Hugging Face Spaces (docker)</text>
+  <text class="text" x="1005" y="522">Live URL + health checks</text>
+
+  <rect class="note" x="70" y="630" width="1260" height="150"/>
+  <text class="label" x="95" y="670">Validation and Packaging</text>
+  <text class="noteText" x="95" y="700">openenv.yaml defines environment metadata. pyproject.toml provides project scripts and dependencies.</text>
+  <text class="noteText" x="95" y="724">uv.lock freezes dependency graph for reproducible multi-mode deployment checks.</text>
+  <text class="noteText" x="95" y="748">README documents runtime variables, API usage, and deployment commands.</text>
+
+  <path class="line" d="M330 220 L410 220"/>
+  <path class="line" d="M710 220 L790 220"/>
+  <path class="line" d="M1050 220 L1110 220"/>
+  <path class="line" d="M560 290 L560 390"/>
+  <path class="line" d="M920 290 L920 390"/>
+  <path class="line" d="M510 465 L590 465"/>
+  <path class="line" d="M910 465 L980 465"/>
+</svg>
