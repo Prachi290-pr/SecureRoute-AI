@@ -1,6 +1,7 @@
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 from environment import SecureRouteEnv
@@ -24,8 +25,99 @@ def health() -> dict[str, str]:
 
 
 @app.get("/")
-def root() -> dict[str, list[str]]:
-    return {"endpoints": ["/health", "/reset", "/state", "/step"]}
+def root() -> HTMLResponse:
+        return HTMLResponse(
+                content="""
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>SecureRoute-AI</title>
+        <style>
+            :root {
+                --bg: #0b1220;
+                --card: #111a2b;
+                --text: #e5ecf4;
+                --muted: #98a6ba;
+                --accent: #3ddc97;
+                --border: #25324a;
+            }
+            * { box-sizing: border-box; }
+            body {
+                margin: 0;
+                font-family: Segoe UI, sans-serif;
+                color: var(--text);
+                background: radial-gradient(circle at top right, #12305a 0%, var(--bg) 50%);
+            }
+            .wrap {
+                max-width: 860px;
+                margin: 48px auto;
+                padding: 0 20px;
+            }
+            .card {
+                background: linear-gradient(180deg, #121d30 0%, var(--card) 100%);
+                border: 1px solid var(--border);
+                border-radius: 14px;
+                padding: 28px;
+                box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+            }
+            h1 {
+                margin: 0 0 8px;
+                font-size: 30px;
+                letter-spacing: 0.2px;
+            }
+            p {
+                color: var(--muted);
+                line-height: 1.6;
+                margin: 0 0 18px;
+            }
+            ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                display: grid;
+                gap: 10px;
+            }
+            li {
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                padding: 12px 14px;
+                background: #0f1828;
+            }
+            code {
+                color: var(--accent);
+                font-size: 14px;
+            }
+            a {
+                color: #8bd3ff;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="wrap">
+            <div class="card">
+                <h1>SecureRoute-AI</h1>
+                <p>
+                    Text-based OpenEnv environment for PII redaction and compliance routing.
+                    Use the endpoints below to interact with the environment.
+                </p>
+                <ul>
+                    <li><code>GET /health</code> - service status</li>
+                    <li><code>POST /reset</code> - initialize random or selected ticket</li>
+                    <li><code>GET /state</code> - current observation</li>
+                    <li><code>POST /step</code> - submit redaction and routing action</li>
+                    <li><code>GET /docs</code> - interactive API docs</li>
+                </ul>
+                <p style="margin-top:14px;">
+                    Space repo: <a href="https://huggingface.co/spaces/Chintamani007/secure-route-ai">huggingface.co/spaces/Chintamani007/secure-route-ai</a>
+                </p>
+            </div>
+        </div>
+    </body>
+</html>
+"""
+        )
 
 
 @app.post("/reset", response_model=Observation)
