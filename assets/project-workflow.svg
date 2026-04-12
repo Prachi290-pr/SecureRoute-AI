@@ -85,8 +85,8 @@
   <path class="line" d="M330 220 L410 220"/>
   <path class="line" d="M710 220 L790 220"/>
   <path class="line" d="M1050 220 L1110 220"/>
-  <path class="line" d="M560 290 L560 390"/>
-  <path class="line" d="M920 290 L920 390"/>
+  <path class="line" d="M560 290 L560 340 L750 340 L750 390"/>
+  <path class="line" d="M920 290 L920 340 L1125 340 L1125 390"/>
   <path class="line" d="M510 465 L590 465"/>
   <path class="line" d="M910 465 L980 465"/>
 </svg>
